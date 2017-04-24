@@ -37,6 +37,30 @@ class Position:
         # wc
         # bc
 
+    def moves(self):
+        # manipulate the bitboard & create an array of new position classes
+        # need to flip to accomodate for the other side now
+        moves = []
+        moves.append(pawnMoves())
+        moves.append(knightMoves())
+        moves.append(bishopMoves())
+        moves.append(rookMoves())
+        moves.append(queenMoves())
+        moves.append(kingMoves())
+        
+        #return a bunch of positions
+
+    def pawnMoves(self):          #necessary boards in parameters
+
+    def knightMoves(self):         #necessary boards in parameters
+
+    def bishopMoves(self):          #necessary boards in parameters
+
+    def rookMoves(self):         #necessary boards in parameters
+
+    def queenMoves(self):          #necessary boards in parameters
+
+    def kingMoves(self):         #necessary boards in parameters
 
 
 
@@ -54,10 +78,12 @@ def main():
         'r': bitarray('0000000000000000000000000000000000000000000000000000000010000001'),
         'q': bitarray('0000000000000000000000000000000000000000000000000000000000010000'),
         'k': bitarray('0000000000000000000000000000000000000000000000000000000000001000'),
-
+        'white': bitarray('1111111111111111000000000000000000000000000000000000000000000000'),
+        'black': bitarray('0000000000000000000000000000000000000000000000001111111111111111') 
     }
 
-    pos = Position(bitboard)
+    pos = Position(bitboard)    #creates the board
+    #
     print(pos.bitboard) #figure out how to encapsulate the bitboard
 	
 
