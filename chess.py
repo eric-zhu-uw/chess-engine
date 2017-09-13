@@ -1,91 +1,126 @@
-from bitarray import bitarray
+from evaluate import evaluate
+from moves import moves
+from itertools import count	# https://docs.python.org/2/library/itertools.html#itertools.count
+#UNDERSTANDING YIELD http://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do-in-python
+
+# Two basic algorithms to apply are:
+#		1. minmax
+#												[starting position 1.5]													START
+#				[p1 2.5]    						   [p2 0]      					 	[p3 1.5]					MAX
+#	[p1.1 0] [p1.2 3.5] [p1.3 2.5] # [p2.1 -1] [p2.2 0] [p2.3 3] # [p3.1 0] [p3.2 1.5] [p3.3 5]	MIN
 
 
-A1, H1, A8, H8 = 91, 98, 21, 28
+#		2. alpha-beta pruning
+#				Essentially sets the lower||upper bound stating,
+#				"no one would put themselves in a worse after the move compared to before"
 
-initial = (
-    '         \n'  #   0 -  9
-    '         \n'  #  10 - 19
-    ' rnbqkbnr\n'  #  20 - 29
-    ' pppppppp\n'  #  30 - 39
-    ' ........\n'  #  40 - 49
-    ' ........\n'  #  50 - 59
-    ' ........\n'  #  60 - 69
-    ' ........\n'  #  70 - 79
-    ' PPPPPPPP\n'  #  80 - 89
-    ' RNBQKBNR\n'  #  90 - 99
-    '         \n'  # 100 -109
-    '         \n'  # 110 -119
-)
+#		3. quicessence search "quiet position"
 
-N, E, S, W = -10, 1, 10, -1
-#curly braces are used to define a dictionary
-directions = {
-	'P': (N, N+N, N+W, N+E),
-	'N': (N+N+W, N+N+E, E+E+N, E+E+S, S+S+E, S+S+W, W+W+S, W+W+N),
-	'B': (N+E, S+E, S+W, N+W),					#
-	'R': (N, E, S, W),							# multipless of these directions
-	'Q': (N, N+E, E, S+E, S, S+W, W, N+W, N), 	#
-	'K': (N, N+E, E, S+E, S, S+W, W, N+W, N)
-}
+
+# Head
+#   key
+#   value
+#   listofPositions
+
+# class Position should store:
+#		1. board 		--> position of all of the current pieces [10x10]
+#		2. value				--> score of the position
+#		3. validPositions	--> following Posititions
+
+DEPTH = 4
 
 class Position:
 
-    def __init__(self, bitboard):
-        self.bitboard = bitboard
-        #find value of the board
-        # wc
-        # bc
+	def __init__(self, board, wc, bc, depth):	#white castle, black castle
+		self.board = board
+		self.wc = wc
+		self.bc = bc
+		self.depth = depth
+		self.listOfPos = []
+		self.value = 'x'
+		if depth == DEPTH:
+			self.value = evaluate(board)
+		if depth < DEPTH:
+			self.moves = moves(board)
+			for x in self.moves:
+				self.listOfPos.append(rotate(x, wc, bc, depth))
 
-    def moves(self):
-        # manipulate the bitboard & create an array of new position classes
-        # need to flip to accomodate for the other side now
-        moves = []
-        moves.append(pawnMoves())
-        moves.append(knightMoves())
-        moves.append(bishopMoves())
-        moves.append(rookMoves())
-        moves.append(queenMoves())
-        moves.append(kingMoves())
-        
-        #return a bunch of positions
+		# turn the array into boards for the opposite side
 
-    def pawnMoves(self):          #necessary boards in parameters
+def printBoard(board):
+	print('//==============================//')
+	for i, x in enumerate(board):
+		if(i != 0 and i % 10 == 0):
+			print('          ')
+		print(x, end = " ")
+	print()
+	print('//==============================//')
 
-    def knightMoves(self):         #necessary boards in parameters
+def printPosTree(pos):
+	printBoard(pos.board)
+	print(pos.value)
+	if(pos.depth < DEPTH):
+		for x in pos.listOfPos:
+			printPosTree(x)
 
-    def bishopMoves(self):          #necessary boards in parameters
+def rotate(board, wc, bc, depth):
+	return Position(board[::-1].swapcase(), wc, bc, depth+1)
+	# since you are always switching sides... you always want to maximize score
 
-    def rookMoves(self):         #necessary boards in parameters
+def findMax(listOfPos):
+	curMax = -100000
+	for x in listOfPos:
+		if x.value == 'x':
+			x.value = findMax(x.listOfPos)
+		curMax = max(curMax, x.value)
+	return curMax
 
-    def queenMoves(self):          #necessary boards in parameters
+def minimax(pos):
+	return findMax(pos.listOfPos)
 
-    def kingMoves(self):         #necessary boards in parameters
+def oneDepthMax(listOfPos):
+	curMax = -100000
+	curPos = listOfPos[0]			#questionable assignment
+	for x in listOfPos:
+		if x.value > curMax:
+			curMax = x.value
+			curPos = x
+	return curPos
 
 
-
-def main():
-    bitboard = {
-        'P': bitarray('0000000011111111000000000000000000000000000000000000000000000000'),
-        'N': bitarray('0100001000000000000000000000000000000000000000000000000000000000'),
-        'B': bitarray('0010010000000000000000000000000000000000000000000000000000000000'),
-        'R': bitarray('1000000100000000000000000000000000000000000000000000000000000000'),
-        'Q': bitarray('0001000000000000000000000000000000000000000000000000000000000000'),
-        'K': bitarray('0000100000000000000000000000000000000000000000000000000000000000'),
-        'p': bitarray('0000000000000000000000000000000000000000000000001111111100000000'),
-        'n': bitarray('0000000000000000000000000000000000000000000000000000000001000010'),
-        'b': bitarray('0000000000000000000000000000000000000000000000000000000000100100'),
-        'r': bitarray('0000000000000000000000000000000000000000000000000000000010000001'),
-        'q': bitarray('0000000000000000000000000000000000000000000000000000000000010000'),
-        'k': bitarray('0000000000000000000000000000000000000000000000000000000000001000'),
-        'white': bitarray('1111111111111111000000000000000000000000000000000000000000000000'),
-        'black': bitarray('0000000000000000000000000000000000000000000000001111111111111111') 
-    }
-
-    pos = Position(bitboard)    #creates the board
-    #
-    print(pos.bitboard) #figure out how to encapsulate the bitboard
-	
 
 if __name__ == '__main__':
-	main()
+	board = (				#type of string
+		'..........'
+		'.rnbqkbnr.'
+		'.pppppppp.'
+		'.        .'
+		'.        .'
+		'.        .'
+		'.        .'
+		'.PPPPPPPP.'
+		'.RNBQKBNR.'
+		'..........'
+	)
+
+	board2 = (
+		'..........'
+		'.r b k nr.'
+		'.pp pppbp.'
+		'.  n   p .'
+		'.        .'
+		'.    PP  .'
+		'.  P     .'
+		'.PP N  PP.'
+		'.R  Q RK .'
+		'..........'
+	)
+
+
+
+	pos = Position(board2, 3, 3, 0)
+	printBoard(board2)
+	minimax(pos)	
+	nextPos = oneDepthMax(pos.listOfPos)
+	printBoard(nextPos.board)
+

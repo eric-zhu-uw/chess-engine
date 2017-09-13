@@ -81,7 +81,7 @@ boardTestPawn = (
 	)
 
 def testBoard(board):
-	posMoves = Position(board)
+	posMoves = Position(board, 2, 3, 3, 0)
 	printBoard(board)
 	print(posMoves.value)
 	print(posMoves.moves)

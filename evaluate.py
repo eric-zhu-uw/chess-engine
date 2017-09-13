@@ -13,6 +13,7 @@
 # params: listof(listof Char)
 # return: int
 
+# more accurate evaluation function to care about board position !!!
 def evaluate(board):
 		score = 0
 
